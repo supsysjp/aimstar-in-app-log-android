@@ -186,11 +186,11 @@ fun updateLoginState(customerId: String?)
 
 ```kotlin
 fun updateDeepLink(
-    campaign: String? = null,
-    content: String? = null,
-    medium: String? = null,
-    source: String? = null,
-    term: String? = null
+    campaign: String?,
+    content: String?,
+    medium: String?,
+    source: String?,
+    term: String?
 )
 ```
 
@@ -229,10 +229,10 @@ fun trackProductInfo(
 
 ```kotlin
 fun trackClickButton(
-    action: String? = null,
-    buttonId: String? = null,
-    buttonName: String? = null,
-    buttonText: String? = null,
+    action: String?,
+    buttonId: String?,
+    buttonName: String?,
+    buttonText: String?,
     customParams: Map<String, CustomValueType>? = null
 )
 ```
@@ -241,14 +241,14 @@ fun trackClickButton(
 
 ```kotlin
 fun trackSearch(
-    pageNumber: Int? = null,
-    requestUrl: String? = null,
-    resultsCount: Int? = null,
-    searchQuery: String? = null,
-    searchType: String? = null,
-    sortKey: String? = null,
-    sortOrder: String? = null,
-    statusCode: Int? = null,
+    pageNumber: Int?,
+    requestUrl: String?,
+    resultsCount: Int?,
+    searchQuery: String?,
+    searchType: String?,
+    sortKey: String?,
+    sortOrder: String?,
+    statusCode: Int?,
     customParams: Map<String, CustomValueType>? = null
 )
 ```
@@ -259,11 +259,11 @@ fun trackSearch(
 
 ```kotlin
 fun trackCartProduct(
-    amount: Int? = null,
-    cartId: String? = null,
-    productId: String? = null,
-    productName: String? = null,
-    skuId: String? = null,
+    amount: Int?,
+    cartId: String?,
+    productId: String?,
+    productName: String?,
+    skuId: String?,
     customParams: Map<String, CustomValueType>? = null
 )
 ```
@@ -274,10 +274,10 @@ fun trackCartProduct(
 
 ```kotlin
 fun trackFavoriteProduct(
-    isUnfavorite: Boolean? = null,
-    productId: String? = null,
-    productName: String? = null,
-    skuId: String? = null,
+    isUnfavorite: Boolean?,
+    productId: String?,
+    productName: String?,
+    skuId: String?,
     customParams: Map<String, CustomValueType>? = null
 )
 ```
@@ -288,13 +288,13 @@ fun trackFavoriteProduct(
 
 ```kotlin
 fun trackPurchase(
-    cartId: String? = null,
-    itemCount: Int? = null,
-    orderId: String? = null,
-    paymentMethod: String? = null,
-    shippingAmount: Double? = null,
-    taxAmount: Double? = null,
-    totalAmount: Double? = null,
+    cartId: String?,
+    itemCount: Int?,
+    orderId: String?,
+    paymentMethod: String?,
+    shippingAmount: Double?,
+    taxAmount: Double?,
+    totalAmount: Double?,
     customParams: Map<String, CustomValueType>? = null
 )
 ```
@@ -305,8 +305,8 @@ fun trackPurchase(
 
 ```kotlin
 fun trackPushLog(
-    notificationId: String? = null,
-    notificationAction: String? = null,
+    notificationId: String?,
+    notificationAction: String?,
     customParams: Map<String, CustomValueType>? = null
 )
 ```
@@ -317,14 +317,14 @@ fun trackPushLog(
 
 ```kotlin
 fun trackRequestApi(
-    latencyMs: Int? = null,
-    errorMessage: String? = null,
-    queryParams: String? = null,
-    requestMethod: String? = null,
-    requestOrigin: String? = null,
-    requestSize: Int? = null,
-    requestUrl: String? = null,
-    statusCode: Int? = null,
+    latencyMs: Int?,
+    errorMessage: String?,
+    queryParams: String?,
+    requestMethod: String?,
+    requestOrigin: String?,
+    requestSize: Int?,
+    requestUrl: String?,
+    statusCode: Int?,
     customParams: Map<String, CustomValueType>? = null
 )
 ```
