@@ -20,15 +20,17 @@ import jp.co.aimstar.logging.android.AimstarLogSDKConfig
 import jp.co.aimstar.logging.android.data.model.CustomValueType
 
 class MainActivity : ComponentActivity() {
-    private val apiKey = "YOUR API KEY"
-    private val tenantId = "YOUR TENANT ID"
     private val customerId = "user_001"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val config = AimstarLogSDKConfig(apiKey = apiKey, tenantId = tenantId)
+        val config = AimstarLogSDKConfig(apiKey = "YOUR API KEY", tenantId = "YOUR TENANT ID")
+        // 必要に応じてログの送信に関する設定を行います
+        config.batchInterval = 20
+        config.maxLogCount = 50
+
         AimstarInAppLog.setup(context = this.applicationContext, config = config)
 
         AimstarInAppLog.updateLoginState(customerId)
@@ -36,7 +38,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AimstarInAppLogTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
+                    ExampleScreen(
                         customerId = customerId,
                         modifier = Modifier.padding(innerPadding)
                     )
@@ -47,7 +49,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(customerId: String, modifier: Modifier = Modifier) {
+fun ExampleScreen(customerId: String, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -67,15 +69,15 @@ fun Greeting(customerId: String, modifier: Modifier = Modifier) {
                 )
             )
         }) {
-            Text(text = "send page viewed event")
+            Text(text = "Send page view event")
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun ExampleScreenPreview() {
     AimstarInAppLogTheme {
-        Greeting("test_user_001")
+        ExampleScreen("user_001")
     }
 }
