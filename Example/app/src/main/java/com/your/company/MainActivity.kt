@@ -14,10 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.aimstarinapplogstorage.AimstarInAppLog
-import com.aimstarinapplogstorage.AimstarLogSDKConfig
-import com.aimstarinapplogstorage.data.model.CustomValueType
 import com.your.company.ui.theme.AimstarInAppLogTheme
+import jp.co.aimstar.logging.android.AimstarInAppLog
+import jp.co.aimstar.logging.android.AimstarLogSDKConfig
+import jp.co.aimstar.logging.android.data.model.CustomValueType
 
 class MainActivity : ComponentActivity() {
     private val apiKey = "YOUR API KEY"

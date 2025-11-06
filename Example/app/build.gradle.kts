@@ -41,7 +41,7 @@ android {
 
 dependencies {
 
-    implementation(files("libs/AimstarInAppLogStorage-release.aar"))
+    implementation(files("libs/AimstarInAppLogSdk.aar"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
