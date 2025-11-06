@@ -1,4 +1,4 @@
-# Aimstar In-App Messaging Android SDK
+# Aimstar In App Log Android SDK
 
 ## Requirements
 
