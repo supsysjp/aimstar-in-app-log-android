@@ -14,6 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.aimstarinapplogstorage.AimstarInAppLog
+import com.aimstarinapplogstorage.AimstarLogSDKConfig
+import com.aimstarinapplogstorage.data.model.CustomValueType
 import com.your.company.ui.theme.AimstarInAppLogTheme
 
 class MainActivity : ComponentActivity() {
@@ -25,15 +28,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-//        val config = AimstarLogSDKConfig(apiKey = apiKey, tenantId = tenantId)
-//        AimstarInAppLog.setup(context = this.applicationContext, config = config)
+        val config = AimstarLogSDKConfig(apiKey = apiKey, tenantId = tenantId)
+        AimstarInAppLog.setup(context = this.applicationContext, config = config)
 
-//        AimstarInAppLog.updateLoginState(customerId)
+        AimstarInAppLog.updateLoginState(customerId)
 
         setContent {
             AimstarInAppLogTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
+                        customerId = customerId,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -43,25 +47,25 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(modifier: Modifier = Modifier) {
+fun Greeting(customerId: String, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Button(onClick = {
-//            AimstarInAppLog.trackPageView(
-//                pageTitle = "PageViewScreen",
-//                pageUrl = "https://page/pageview",
-//                referrerUrl = "https://page/home",
-//                customParams = mapOf(
-//                    "is_logged_in" to CustomValueType.BooleanValue(customerId.isNotEmpty()),
-//                    "membership_level" to if (customerId.isNotEmpty()) {
-//                        CustomValueType.StringValue("gold")
-//                    } else {
-//                        CustomValueType.StringValue("guest")
-//                    }
-//                )
-//            )
+            AimstarInAppLog.trackPageView(
+                pageTitle = "PageViewScreen",
+                pageUrl = "https://page/pageview",
+                referrerUrl = "https://page/home",
+                customParams = mapOf(
+                    "is_logged_in" to CustomValueType.BooleanValue(customerId.isNotEmpty()),
+                    "membership_level" to if (customerId.isNotEmpty()) {
+                        CustomValueType.StringValue("gold")
+                    } else {
+                        CustomValueType.StringValue("guest")
+                    }
+                )
+            )
         }) {
             Text(text = "send page viewed event")
         }
@@ -72,6 +76,6 @@ fun Greeting(modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview() {
     AimstarInAppLogTheme {
-        Greeting()
+        Greeting("test_user_001")
     }
 }
