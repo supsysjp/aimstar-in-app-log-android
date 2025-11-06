@@ -8,26 +8,30 @@
 ## 制限事項
 
 - マルチウインドウモードの同時表示には対応していません
-- Jetpack Compose など完全な Compose ベースの UI では表示レイアウトが崩れる可能性があるため、現時点では非推奨です
 
-## SDK で提供する機能について
+## SDKで提供する機能について
 
-- アプリのページ閲覧イベントを Aimstar に送信する
-- コンバージョンボタンのタップといった各イベントを送信する
+- ページ閲覧イベントをはじめとした、ユーザーのアプリ操作イベントを Aimstar に送信する
+- ログイン・ログアウト状態を管理し、ユーザー単位でログを紐づける
+- バッチ送信間隔や一度に送信するログの件数上限など、ログ送信の挙動を設定する
 
 ## 用語
 
 | 用語 | 説明 |
-| - | - |
-| API Key | Aimstar In-App Messaging を利用するために必要な API キーで、Aimstar 側で事前にアプリ開発者に発行されます。 |
-| Tenant ID | Aimstar In-App Messaging を利用するために必要なテナント ID で、Aimstar 側で事前にアプリ開発者に発行されます。 |
+| --- | --- |
+| API Key | Aimstar In App Log を利用するために必要な API キーで、Aimstar 側で事前にアプリ開発者に発行されます。 |
+| Tenant ID | Aimstar In App Log を利用するために必要なテナント ID で、Aimstar 側で事前にアプリ開発者に発行されます。 |
+| Batch Interval | Aimstar In App Log では、アプリ開発者がログを送信する「間隔」（秒単位）を指定できます。 |
+| Max Batch Count |  Aimstar In App Log では、アプリ開発者が一度に送信するログの「件数上限」を指定できます。 |
 | Customer ID | アプリ開発者がユーザーを識別する ID で、アプリ開発者が独自に発行、生成、または利用します。 |
+| Session ID |  Aimstar In App Log 側で、アプリ起動ごとに新規発行するセッション識別子です。 |
+| Installation ID | Aimstar In App Log 側で、アプリインストールごとに一意となる識別子です。 |
 
 ## 導入手順
 
 ### 1. SDK をアプリに追加する
 
-1. Aimstar が提供する `aimstar-in-app-log.aar` をダウンロードし、`app/libs` ディレクトリに配置します
+1. Aimstar が提供する `AimstarInAppLogSdk.aar` をダウンロードし、`app/libs` ディレクトリに配置します
 2. モジュールの `build.gradle.kts`（または `build.gradle`）に以下を追記します
 
 ```kotlin
@@ -36,101 +40,297 @@ repositories {
 }
 
 dependencies {
-    implementation(files("libs/aimstar-in-app-log.aar"))
+    implementation(files("libs/AimstarInAppLogSdk.aar"))
 }
 ```
 
 3. ProGuard / R8 を利用している場合は、Aimstar 提供のルールファイルを併せて追加してください
 
-### 2. SDK の初期化とイベントリスナーを設定する
+### 2. SDKの初期化を行う
 
-アプリ起動時に API キーとテナント ID を設定し、イベントリスナーを登録します。`Application` クラスでの初期化例を示します。
+アプリ起動時に APIキーとテナントID を設定します。`MainActivity` クラスでの初期化例を示します。
 
 ```kotlin
-import android.app.Application
-import jp.aimstar.messaging.AimstarInAppMessaging
-import jp.aimstar.messaging.AimstarInAppMessagingListener
-import jp.aimstar.messaging.model.InAppMessage
+import androidx.activity.ComponentActivity
+import jp.co.aimstar.logging.android.AimstarInAppLog
+import jp.co.aimstar.logging.android.AimstarLogSDKConfig
 
-class SampleApp : Application() {
+class MainActivity : ComponentActivity() {
+    private val apiKey = "YOUR API KEY"
+    private val tenantId = "YOUR TENANT ID"
 
     override fun onCreate() {
         super.onCreate()
 
-        val apiKey = "YOUR API KEY"
-        val tenantId = "YOUR TENANT ID"
-
-        AimstarInAppMessaging.apiKey = apiKey
-        AimstarInAppMessaging.tenantId = tenantId
-        AimstarInAppMessaging.listener = this
+        val config = AimstarLogSDKConfig(apiKey = apiKey, tenantId = tenantId)
+        AimstarInAppLog.setup(context = this.applicationContext, config = config)
     }
 }
 ```
 
-### 3. Customer ID の設定
+### 3. Batch Interval と Max Batch Countの設定
+
+setup時に必要に応じてログの送信に関する設定をしてください。
+
+```kotlin
+val config = AimstarLogSDKConfig(apiKey = apiKey, tenantId = tenantId)
+
+// ログを送信する「間隔」（秒単位）を指定できます。
+config.batchInterval = 20
+
+// 一度に送信するログの「件数上限」を指定できます。
+config.maxBatchCount = 50
+```
+
+### 4. Customer IDの設定
 
 アプリでユーザーが識別可能になったタイミングで `customerId` を設定します。
 
 ```kotlin
-// 例: ログイン完了後に実行
-AimstarInAppMessaging.customerId = "ユーザーを識別する ID"
+// ログイン直後など、ユーザーが識別できる状態で実行
+AimstarInAppLog.updateLoginState(customerId = "user_001")
 
-// ログアウト時は null にリセット
-AimstarInAppMessaging.customerId = null
+// ログアウト時
+AimstarInAppLog.updateLoginState(customerId = null)
 ```
 
-### 4. ページ閲覧イベントの送出
+### 5.ユーザー操作イベントの記録
 
-該当画面で `trackPageView` を呼び出し、対応する `screenName` を渡します。条件に合致した場合はポップアップが表示されます。
+スクリーン名やイベント名を指定してログを送出します。バッチ設定に従って Aimstar に送信されます。
 
 ```kotlin
-AimstarInAppMessaging.trackPageView(activity = this, screenName = "Your Screen Name")
+AimstarInAppLog.trackPageView(
+    pageUrl: "http//...",
+    pageTitle: self.title,
+    referrerUrl: "http//...",
+    customParams: mapOf(
+        "is_logged_in" to CustomValueType.BooleanValue(true),
+        "membership_level" to CustomValueType.StringValue("gold")
+    )
+)
 ```
-
----
 
 # SDK References
 
-## AimstarInAppMessaging
+## AimstarLogSDKConfig
 
 ```kotlin
-object AimstarInAppMessaging
+class AimstarLogSDKConfig
 ```
 
-SDK のエントリーポイントです。`apiKey` と `tenantId` の設定が完了するまでは、SDK の機能は利用できません。
+SDK 初期化時の設定を管理するクラスです。必須項目としてAPI Key・Tenant ID、オプション項目としてBatch Interval・Max Batch Countを指定します。
 
 ### Properties
 
-#### apiKey: String (必須)
+#### batchInterval: Int?
 
 ```kotlin
-var apiKey: String
+var batchInterval: Int?
 ```
 
-SDK 利用のための API キーを設定します。アプリ起動直後に設定してください。
+Aimstar へログイベントをバッチ送信する「間隔」（秒）を設定します。
 
-#### tenantId: String (必須)
+#### maxBatchCount: Int?
 
 ```kotlin
-var tenantId: String
+var maxBatchCount: Int?
 ```
 
-SDK 利用のためのテナント ID を設定します。
+Aimstar へ一度に送信するログイベントの「件数上限」を指定します。
 
-#### customerId: String?
+## AimstarInAppLog
 
 ```kotlin
-var customerId: String?
+object AimstarInAppLog
 ```
 
-ユーザーを識別する ID を設定します。`null` の場合はログアウト状態として扱われます。
+SDK のエントリーポイントです。`setup` メソッドを通じて初期化を行います。初期化が完了するまでイベント送出は利用できません。
+
+### Properties
+
+#### sessionId: String?
+
+```kotlin
+val sessionId: String?
+```
+
+アプリ起動ごとに新規発行されるセッションIDを参照できます。
+
+#### installationId: String?
+
+```kotlin
+val installationId: String?
+```
+
+アプリインストールごとに一意となるIDを参照できます。
 
 ### Functions
 
-#### trackPageView(activity: Activity, screenName: String)
+#### setup(config:)
 
 ```kotlin
-fun trackPageView(activity: Activity, screenName: String)
+fun setup(config: AimstarLogSDKConfig)
 ```
 
-任意のタイミングで呼び出し、指定した `screenName` に紐づくメッセージを取得・表示します。ポップアップは引数で渡した `activity` 上に描画されます。
+SDK の初期化を行います。
+
+#### updateLoginState(customerId:)
+
+```kotlin
+fun updateLoginState(customerId: String?)
+```
+
+ユーザーのログイン状態を更新します。`null` を渡すとログアウト状態になります。
+
+#### updateDeepLink(campaign:, content:, medium:, source:, term:)
+
+```kotlin
+fun updateDeepLink(
+    campaign: String? = null,
+    content: String? = null,
+    medium: String? = null,
+    source: String? = null,
+    term: String? = null
+)
+```
+
+Deep Link情報を更新します。
+
+#### trackPageView(pageUrl:, pageTitle:, referrerUrl:, customParams:)
+
+```kotlin
+fun trackPageView(
+    pageUrl: String?,
+    pageTitle: String?,
+    referrerUrl: String?,
+    customParams: Map<String, CustomValueType>? = null
+)
+```
+
+ページ閲覧イベントを Aimstar に送信します。
+
+#### trackProductInfo(brand:, productCategory:, productId:, productName:, productPrice:, skuId:, customParams:)
+
+```kotlin
+fun trackProductInfo(
+    brand: String?,
+    productCategory: String?,
+    productId: String?,
+    productName: String?,
+    productPrice: Double?,
+    skuId: String?,
+    customParams: Map<String, CustomValueType>? = null
+)
+```
+
+商品情報閲覧イベントを Aimstar に送信します。
+
+#### trackClickButton(action:, buttonId:, buttonName:, buttonText:, customParams:)
+
+```kotlin
+fun trackClickButton(
+    action: String? = null,
+    buttonId: String? = null,
+    buttonName: String? = null,
+    buttonText: String? = null,
+    customParams: Map<String, CustomValueType>? = null
+)
+```
+
+ボタンクリックイベントを Aimstar に送信します。
+
+```kotlin
+fun trackSearch(
+    pageNumber: Int? = null,
+    requestUrl: String? = null,
+    resultsCount: Int? = null,
+    searchQuery: String? = null,
+    searchType: String? = null,
+    sortKey: String? = null,
+    sortOrder: String? = null,
+    statusCode: Int? = null,
+    customParams: Map<String, CustomValueType>? = null
+)
+```
+
+検索行動イベントを Aimstar に送信します。
+
+#### trackCartProduct(amount:, cartId:, productId:, productName:, skuId:, customParams:)
+
+```kotlin
+fun trackCartProduct(
+    amount: Int? = null,
+    cartId: String? = null,
+    productId: String? = null,
+    productName: String? = null,
+    skuId: String? = null,
+    customParams: Map<String, CustomValueType>? = null
+)
+```
+
+カート操作イベントを Aimstar に送信します。
+
+#### trackFavoriteProduct(isUnfavorite:, productId:, productName:, skuId:, customParams:)
+
+```kotlin
+fun trackFavoriteProduct(
+    isUnfavorite: Boolean? = null,
+    productId: String? = null,
+    productName: String? = null,
+    skuId: String? = null,
+    customParams: Map<String, CustomValueType>? = null
+)
+```
+
+お気に入り操作イベントを Aimstar に送信します。
+
+#### trackPurchase(cartId:, itemCount:, orderId:, paymentMethod:, shippingAmount:, taxAmount:, totalAmount:, customParams:)
+
+```kotlin
+fun trackPurchase(
+    cartId: String? = null,
+    itemCount: Int? = null,
+    orderId: String? = null,
+    paymentMethod: String? = null,
+    shippingAmount: Double? = null,
+    taxAmount: Double? = null,
+    totalAmount: Double? = null,
+    customParams: Map<String, CustomValueType>? = null
+)
+```
+
+購入完了イベントを Aimstar に送信します。
+
+#### trackPushLog(notificationId:, notificationAction:, customParams:)
+
+```kotlin
+fun trackPushLog(
+    notificationId: String? = null,
+    notificationAction: String? = null,
+    customParams: Map<String, CustomValueType>? = null
+)
+```
+
+プッシュ通知イベントを Aimstar に送信します。
+
+#### trackRequestApi(latencyMs:, errorMessage:, queryParams:, requestMethod:, requestOrigin:, requestSize:, requestUrl:, statusCode:, customParams:)
+
+```kotlin
+fun trackRequestApi(
+    latencyMs: Int? = null,
+    errorMessage: String? = null,
+    queryParams: String? = null,
+    requestMethod: String? = null,
+    requestOrigin: String? = null,
+    requestSize: Int? = null,
+    requestUrl: String? = null,
+    statusCode: Int? = null,
+    customParams: Map<String, CustomValueType>? = null
+)
+```
+
+外部API呼び出しイベントを Aimstar に送信します。
+
+## Exampleプロジェクト
+
+リポジトリ内の `Example` にサンプルアプリを同梱しています。初期化やイベント送出の動作確認にご活用ください。

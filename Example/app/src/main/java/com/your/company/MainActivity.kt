@@ -22,7 +22,7 @@ import jp.co.aimstar.logging.android.data.model.CustomValueType
 class MainActivity : ComponentActivity() {
     private val apiKey = "YOUR API KEY"
     private val tenantId = "YOUR TENANT ID"
-    private val customerId = "test_user_001"
+    private val customerId = "user_001"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -40,7 +40,6 @@ android {
 }
 
 dependencies {
-
     implementation(files("libs/AimstarInAppLogSdk.aar"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
