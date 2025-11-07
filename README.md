@@ -3,7 +3,7 @@
 ## Requirements
 
 - ランタイム: Android 6.0 (API 23) 以上
-- 開発環境: Android Studio Iguana 以上、JDK 17
+- 開発環境: Android Studio Arctic Fox (2020.3.1)、JDK 11 以上
 
 ## 制限事項
 
