@@ -35,10 +35,6 @@
 2. モジュールの `build.gradle.kts`（または `build.gradle`）に以下を追記します
 
 ```kotlin
-repositories {
-    flatDir { dirs("libs") }
-}
-
 dependencies {
     implementation(files("libs/AimstarInAppLogSdk.aar"))
 }
